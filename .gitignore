@@ -1,0 +1,10 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# SSH keys
+*.pem
+
+# OS
+.DS_Store
