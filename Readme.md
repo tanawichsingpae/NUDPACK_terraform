@@ -1,67 +1,29 @@
-# โครงการ Deploy Web Application ด้วย Terraform บน AWS
+# การ Deploy ระบบ NUDPACK ด้วย Terraform
 
-## ภาพรวมโครงการ
+โปรเจคนี้เป็นการใช้ **Terraform (Infrastructure as Code)** เพื่อทำการ Provision Infrastructure บน AWS และ Deploy ระบบ **NUDPACK – ระบบจัดการพัสดุภายในองค์กร**
 
-โครงการนี้เป็นการนำแอปพลิเคชันเว็บที่พัฒนาโดยใช้ **Python FastAPI** และ **HTML Frontend** มา deploy บน Cloud โดยใช้ **Terraform (Infrastructure as Code)** เพื่อทำการ Provision Infrastructure และ Deploy ระบบอัตโนมัติบน **AWS EC2**
-
-ระบบจะทำการ
-
-* สร้าง EC2 Instance
-* สร้าง Security Group
-* สร้าง SSH Key Pair
-* Clone Source Code จาก GitHub
-* ติดตั้ง Dependencies
-* รัน FastAPI Server
-
-ฐานข้อมูลของระบบใช้ **Neon PostgreSQL** ซึ่งเป็นบริการฐานข้อมูลแบบ Cloud
+หลังจากทำการ Deploy สำเร็จ ผู้ใช้สามารถเข้าใช้งานระบบผ่าน Web Browser ได้
 
 ---
 
 # โครงสร้างโปรเจค
 
+Repository นี้ประกอบด้วย
+
+* ไฟล์ Terraform (`*.tf`) สำหรับสร้าง Infrastructure
+* การ Deploy Web Application จาก GitHub Repository
+
+Web Application Repository
+
 ```
-NUDPACK/
-│
-├── terraform/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   ├── terraform.tfstate
-│   └── terraform.tfstate.backup
-│
-├── deploy.sh
-└── README.md
+https://github.com/tanawichsingpae/NUDPACKtest.git
 ```
-
-คำอธิบายไฟล์สำคัญ
-
-* **main.tf**
-  ใช้กำหนด Infrastructure ที่ต้องสร้างบน AWS เช่น EC2, Security Group และ Key Pair
-
-* **variables.tf**
-  กำหนดตัวแปรที่ใช้ใน Terraform เช่น AWS Region และ Instance Type
-
-* **outputs.tf**
-  ใช้แสดงผลลัพธ์หลังจาก Deploy เช่น URL ของ Application
 
 ---
 
-# เทคโนโลยีที่ใช้
+# สิ่งที่ต้องมีก่อนเริ่มใช้งาน
 
-* Terraform
-* AWS EC2
-* Python FastAPI
-* Uvicorn
-* PostgreSQL (Neon Database)
-* GitHub
-
----
-
-# ขั้นตอนการติดตั้งและใช้งาน
-
-## 1. ติดตั้งเครื่องมือที่จำเป็น
-
-ต้องติดตั้งโปรแกรมดังต่อไปนี้ก่อนใช้งาน
+ก่อนใช้งานต้องติดตั้งเครื่องมือดังนี้
 
 * Terraform
 * AWS CLI
@@ -70,16 +32,16 @@ NUDPACK/
 ตรวจสอบการติดตั้ง
 
 ```
-terraform -version
+terraform -v
 aws --version
 git --version
 ```
 
 ---
 
-# 2. Login AWS CLI
+# ขั้นตอนที่ 1 : Login เข้า AWS CLI
 
-ก่อนใช้งาน Terraform ต้อง Login AWS CLI ก่อน
+ก่อนใช้งาน Terraform ต้องทำการ Login เข้า AWS CLI ก่อน
 
 ใช้คำสั่ง
 
@@ -92,34 +54,48 @@ aws configure
 ```
 AWS Access Key ID
 AWS Secret Access Key
-Region (เช่น ap-southeast-1)
-Output format (json)
+Default region name
+Default output format
+```
+
+ตัวอย่าง region ที่ใช้ในโปรเจค
+
+```
+ap-southeast-1
 ```
 
 ---
 
-# 3. Clone Repository
+# ขั้นตอนที่ 2 : Clone Repository
+
+ทำการ Clone Repository
 
 ```
 git clone <repository-url>
-cd NUDPACK/terraform
+cd NUDPACK_terraform
+```
+
+เข้าไปยังโฟลเดอร์ Terraform
+
+```
+cd terraform
 ```
 
 ---
 
-# 4. Initialize Terraform
+# ขั้นตอนที่ 3 : Initialize Terraform
 
-ใช้คำสั่ง
+ทำการ Initialize Terraform เพื่อดาวน์โหลด Provider ที่จำเป็น
 
 ```
 terraform init
 ```
 
-Terraform จะทำการติดตั้ง Provider และเตรียม Environment สำหรับการทำงาน
+Terraform จะดาวน์โหลด Provider และเตรียม Environment สำหรับการสร้าง Infrastructure
 
 ---
 
-# 5. ตรวจสอบ Infrastructure Plan
+# ขั้นตอนที่ 4 : ตรวจสอบ Infrastructure (Terraform Plan)
 
 ใช้คำสั่ง
 
@@ -127,17 +103,14 @@ Terraform จะทำการติดตั้ง Provider และเตร
 terraform plan
 ```
 
-คำสั่งนี้จะแสดงรายการ Resource ที่ Terraform จะสร้างบน AWS
+คำสั่งนี้ใช้เพื่อ
 
-เช่น
-
-* EC2 Instance
-* Security Group
-* Key Pair
+* ตรวจสอบว่า Terraform Configuration ไม่มี Error
+* แสดงรายการ Resource ที่จะถูกสร้าง
 
 ---
 
-# 6. Deploy Infrastructure และ Application
+# ขั้นตอนที่ 5 : Deploy Infrastructure (Terraform Apply)
 
 ใช้คำสั่ง
 
@@ -145,89 +118,124 @@ terraform plan
 terraform apply
 ```
 
-เมื่อระบบถามยืนยัน ให้พิมพ์
+เมื่อ Terraform ถาม
+
+```
+Do you want to perform these actions?
+```
+
+ให้พิมพ์
 
 ```
 yes
 ```
 
-Terraform จะทำการ
+Terraform จะทำการสร้าง Infrastructure บน AWS เช่น
 
-1. สร้าง EC2 Instance บน AWS
-2. สร้าง Security Group
-3. Clone Source Code จาก GitHub
-4. ติดตั้ง Python และ Dependencies
-5. รัน FastAPI Server
-
-หลังจาก Deploy สำเร็จ Terraform จะแสดง URL สำหรับเข้าใช้งานระบบ เช่น
-
-```
-app_public_url = http://<EC2_PUBLIC_IP>:8000
-```
-
-สามารถเปิด URL นี้ใน Web Browser เพื่อใช้งานระบบได้
+* EC2 Instance
+* Security Group
+* Network Configuration
+* Deploy Web Application จาก GitHub Repository
 
 ---
 
-# 7. ตรวจสอบการทำงานของระบบ
+# ขั้นตอนที่ 6 : เข้าใช้งาน Web Application
 
-เปิด Web Browser และเข้าไปที่
+หลังจาก `terraform apply` สำเร็จ Terraform จะทำการแสดง **Public IP ของ EC2**
+
+ตัวอย่าง Output
 
 ```
-http://<EC2_PUBLIC_IP>:8000
+ec2_public_ip = 54.xxx.xxx.xxx
 ```
 
-ระบบจะทำการเชื่อมต่อกับฐานข้อมูล Neon PostgreSQL และสามารถใช้งานระบบ Login และฟังก์ชันต่าง ๆ ได้
+นำ IP ที่ได้ไปเปิดผ่าน Web Browser
 
 ---
 
-# 8. การลบ Infrastructure
+# หน้าการใช้งานของระบบ
 
-หลังจากใช้งานเสร็จ ควรลบ Infrastructure เพื่อป้องกันค่าใช้จ่ายจาก Cloud
+ระบบ NUDPACK เป็นระบบจัดการพัสดุ โดยมี 3 หน้าหลัก
 
-ใช้คำสั่ง
+### 1. ผู้ดูแลระบบ (Admin)
+
+```
+http://<EC2_PUBLIC_IP>:8000/admin
+```
+
+ใช้สำหรับ
+
+* จัดการข้อมูลพัสดุ
+* ตรวจสอบสถานะพัสดุ
+* บริหารจัดการระบบ
+
+---
+
+### 2. พนักงานขนส่ง (Client)
+
+```
+http://<EC2_PUBLIC_IP>:8000/client
+```
+
+ใช้สำหรับ
+
+* อัปเดตสถานะการจัดส่งพัสดุ
+* จัดการข้อมูลการขนส่ง
+
+---
+
+### 3. ผู้รับพัสดุ (Recipient)
+
+```
+http://<EC2_PUBLIC_IP>:8000/recipient
+```
+
+ใช้สำหรับ
+
+* ตรวจสอบสถานะพัสดุ
+* ยืนยันการรับพัสดุ
+
+---
+
+# ขั้นตอนการลบ Infrastructure (Terraform Destroy)
+
+หากต้องการลบ Infrastructure ทั้งหมดที่สร้างขึ้น สามารถใช้คำสั่ง
 
 ```
 terraform destroy
 ```
 
-เมื่อระบบถามยืนยัน ให้พิมพ์
+เมื่อระบบถาม
+
+```
+Do you really want to destroy all resources?
+```
+
+ให้พิมพ์
 
 ```
 yes
 ```
 
-Terraform จะทำการลบ Resource ทั้งหมดที่สร้างไว้ เช่น
+Terraform จะทำการลบ Resource ทั้งหมดที่ถูกสร้างโดย Terraform เช่น
 
 * EC2 Instance
 * Security Group
-* Key Pair
+* Network Configuration
+
+เพื่อป้องกันค่าใช้จ่ายจากการใช้งาน Cloud
 
 ---
 
-# สรุปการทำงานของระบบ
+# การทดสอบระบบ
 
-ขั้นตอนการทำงานของระบบมีดังนี้
+โปรเจคนี้ได้ทำการทดสอบคำสั่ง Terraform ดังต่อไปนี้แล้ว
 
 ```
-Terraform
-   │
-   ▼
-AWS EC2 Instance
-   │
-   ├── Install Python
-   ├── Clone GitHub Repository
-   ├── Install Dependencies
-   └── Run FastAPI Server
-            │
-            ▼
-      Neon PostgreSQL Database
+terraform init
+terraform plan
+terraform apply
+terraform destroy
 ```
 
-ผู้ใช้สามารถเข้าใช้งานระบบผ่าน Web Browser โดยเชื่อมต่อไปยัง EC2 Instance ที่ถูกสร้างโดย Terraform
-
----
-
-# หมายเหตุ
-
-ก่อนการใช้งาน Terraform จำเป็นต้อง Login AWS CLI ก่อนทุกครั้ง หากยังไม่ได้ตั้งค่า AWS CLI ระบบจะไม่สามารถสร้าง Infrastructure บน AWS ได้
+ทุกคำสั่งสามารถทำงานได้สำเร็จโดยไม่เกิด Error และสามารถเข้าใช้งาน Web Application ได้ผ่าน Public IP ของ EC2 Instance
